@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEARCH HUNTING — SYN1X</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap');
+
+  :root {
+    --neon-cyan:   #00f5ff;
+    --neon-green:  #00ff88;
+    --neon-purple: #bf00ff;
+    --neon-red:    #ff003c;
+    --bg-dark:     #020408;
+    --bg-card:     rgba(0,245,255,0.03);
+    --border:      rgba(0,245,255,0.15);
+    --text-dim:    #4a6070;
+    --text-bright: #cde8f5;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-dark);
+    min-height: 100vh;
+    color: var(--text-bright);
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background-image:
+      linear-gradient(rgba(0,245,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,245,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: gridMove 20s linear infinite;
+    pointer-events: none;
+  }
+  @keyframes gridMove {
+    0%   { background-position: 0 0; }
+    100% { background-position: 40px 40px; }
+  }
+
+  body::after {
+    content: '';
+    position: fixed; inset: 0; z-index: 1;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.12) 2px, rgba(0,0,0,0.12) 4px);
+    pointer-events: none;
+  }
+
+  .wrapper {
+    position: relative; z-index: 2;
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  /* ══ HEADER ══ */
+  header {
+    text-align: center;
+    padding: 50px 20px 40px;
+  }
+  .logo-line {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    margin-bottom: 6px;
+  }
+  .logo-bracket {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 2.6em;
+    color: var(--neon-cyan);
+    opacity: 0.35;
+    line-height: 1;
+  }
+  h1 {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(1.5em, 5vw, 2.8em);
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    background: linear-gradient(90deg, var(--neon-cyan) 0%, #fff 50%, var(--neon-green) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 18px rgba(0,245,255,0.5));
+    animation: titlePulse 4s ease-in-out infinite;
+  }
+  @keyframes titlePulse {
+    0%,100% { filter: drop-shadow(0 0 18px rgba(0,245,255,0.5)); }
+    50%      { filter: drop-shadow(0 0 32px rgba(0,245,255,0.9)); }
+  }
+  .dash-line {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1em;
+    color: var(--text-dim);
+    letter-spacing: 0.3em;
+    margin: 8px 0 14px;
+  }
+  .tag-by {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.78em;
+    color: var(--neon-green);
+    letter-spacing: 0.18em;
+    opacity: 0.75;
+  }
+  .stats-bar {
+    display: flex;
+    justify-content: center;
+    gap: 36px;
+    margin-top: 28px;
+    flex-wrap: wrap;
+  }
+  .stat-box {
+    text-align: center;
+    padding: 12px 24px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-card);
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-box::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+  }
+  .stat-num {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.8em;
+    color: var(--neon-cyan);
+    font-weight: 700;
+  }
+  .stat-lbl {
+    font-size: 0.72em;
+    color: var(--text-dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  /* ══ SEARCH PANEL ══ */
+  .search-panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 26px 30px;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .search-panel::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--neon-cyan), var(--neon-green), transparent);
+  }
+  .search-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.78em;
+    color: var(--neon-cyan);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: block;
+  }
+  .search-row {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .ping-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--neon-green);
+    box-shadow: 0 0 8px var(--neon-green);
+    animation: blink 1.2s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  #target {
+    flex: 1;
+    min-width: 260px;
+    padding: 14px 20px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 15px;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid rgba(0,245,255,0.25);
+    border-radius: 8px;
+    color: var(--neon-cyan);
+    caret-color: var(--neon-cyan);
+    transition: all 0.3s;
+    letter-spacing: 0.05em;
+  }
+  #target::placeholder { color: var(--text-dim); }
+  #target:focus {
+    outline: none;
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 0 3px rgba(0,245,255,0.1), 0 0 20px rgba(0,245,255,0.2);
+    background: rgba(0,245,255,0.04);
+  }
+
+  /* ══ CATEGORIES ══ */
+  .categories { display: grid; gap: 20px; }
+
+  .cat {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: border-color 0.3s, transform 0.3s;
+  }
+  .cat:hover { border-color: rgba(0,245,255,0.3); transform: translateY(-2px); }
+
+  .cat-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 22px;
+    background: rgba(0,245,255,0.04);
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+  }
+  .cat-icon { font-size: 1.2em; flex-shrink: 0; }
+  .cat-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.72em;
+    font-weight: 700;
+    color: var(--neon-cyan);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    flex: 1;
+  }
+  .cat-count {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72em;
+    color: var(--text-dim);
+    background: rgba(0,0,0,0.3);
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+  }
+  .cat-arrow { color: var(--text-dim); font-size: 0.75em; transition: transform 0.3s; }
+  .cat.open .cat-arrow { transform: rotate(180deg); }
+
+  .cat-body { padding: 18px 22px; display: none; }
+  .cat.open .cat-body { display: block; }
+
+  .btn-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 10px;
+  }
+
+  .sbtn {
+    position: relative;
+    padding: 12px 16px 12px 20px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(0,245,255,0.18);
+    border-radius: 8px;
+    color: var(--text-bright);
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.25s;
+    overflow: hidden;
+  }
+  .sbtn::before {
+    content: '›';
+    position: absolute;
+    left: -16px;
+    top: 50%; transform: translateY(-50%);
+    color: var(--neon-cyan);
+    font-size: 1.3em;
+    transition: left 0.25s;
+  }
+  .sbtn:hover {
+    background: rgba(0,245,255,0.08);
+    border-color: var(--neon-cyan);
+    color: #fff;
+    padding-left: 28px;
+    box-shadow: 0 4px 20px rgba(0,245,255,0.15);
+  }
+  .sbtn:hover::before { left: 10px; }
+  .sbtn:active { transform: scale(0.97); }
+
+  /* Color variants */
+  .cat[data-color="green"]  .cat-title { color: var(--neon-green); }
+  .cat[data-color="green"]  .sbtn::before { color: var(--neon-green); }
+  .cat[data-color="green"]  .sbtn:hover { border-color: var(--neon-green); background: rgba(0,255,136,0.07); box-shadow: 0 4px 20px rgba(0,255,136,0.12); }
+
+  .cat[data-color="purple"] .cat-title { color: #c084fc; }
+  .cat[data-color="purple"] .sbtn::before { color: #c084fc; }
+  .cat[data-color="purple"] .sbtn:hover { border-color: #c084fc; background: rgba(192,132,252,0.07); box-shadow: 0 4px 20px rgba(192,132,252,0.12); }
+
+  .cat[data-color="red"]    .cat-title { color: #f87171; }
+  .cat[data-color="red"]    .sbtn::before { color: #f87171; }
+  .cat[data-color="red"]    .sbtn:hover { border-color: #f87171; background: rgba(248,113,113,0.07); box-shadow: 0 4px 20px rgba(248,113,113,0.12); }
+
+  .cat[data-color="yellow"] .cat-title { color: #fbbf24; }
+  .cat[data-color="yellow"] .sbtn::before { color: #fbbf24; }
+  .cat[data-color="yellow"] .sbtn:hover { border-color: #fbbf24; background: rgba(251,191,36,0.07); box-shadow: 0 4px 20px rgba(251,191,36,0.12); }
+
+  .cat[data-color="orange"] .cat-title { color: #fb923c; }
+  .cat[data-color="orange"] .sbtn::before { color: #fb923c; }
+  .cat[data-color="orange"] .sbtn:hover { border-color: #fb923c; background: rgba(251,146,60,0.07); box-shadow: 0 4px 20px rgba(251,146,60,0.12); }
+
+  /* ══ TOAST ══ */
+  #toast {
+    position: fixed; bottom: 28px; right: 28px; z-index: 999;
+    background: rgba(0,10,15,0.96);
+    border: 1px solid var(--neon-cyan);
+    border-radius: 10px;
+    padding: 13px 20px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    color: var(--neon-cyan);
+    box-shadow: 0 0 28px rgba(0,245,255,0.22);
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.35s cubic-bezier(.17,.67,.29,1.4);
+    pointer-events: none;
+  }
+  #toast.show { transform: translateY(0); opacity: 1; }
+
+  /* ══ FOOTER ══ */
+  footer {
+    text-align: center;
+    margin-top: 50px;
+    padding: 28px 20px;
+    border-top: 1px solid var(--border);
+  }
+  .footer-logo {
+    font-family: 'Orbitron', monospace;
+    font-size: 1em;
+    color: var(--neon-cyan);
+    letter-spacing: 0.2em;
+    margin-bottom: 10px;
+    opacity: 0.55;
+  }
+  .footer-note {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.76em;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+  }
+  .footer-note span { color: var(--neon-green); }
+
+  @media (max-width: 600px) {
+    h1 { font-size: 1.3em; }
+    .btn-grid { grid-template-columns: 1fr; }
+    .search-row { flex-direction: column; align-items: stretch; }
+    #target { min-width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div id="toast"></div>
+
+<div class="wrapper">
+
+  <header>
+    <div class="logo-line">
+      <span class="logo-bracket">[</span>
+      <h1>SEARCH HUNTING</h1>
+      <span class="logo-bracket">]</span>
+    </div>
+    <div class="dash-line">— — — S Y N 1 X — — —</div>
+    <div class="tag-by">// ADVANCED RECON TOOLKIT FOR SECURITY RESEARCHERS //</div>
+    <div class="stats-bar">
+      <div class="stat-box">
+        <div class="stat-num">64</div>
+        <div class="stat-lbl">Dork Queries</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">10</div>
+        <div class="stat-lbl">Categories</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">10+</div>
+        <div class="stat-lbl">Platforms</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="search-panel">
+    <span class="search-label">// TARGET DOMAIN INPUT</span>
+    <div class="search-row">
+      <div class="ping-dot"></div>
+      <input type="text" id="target" placeholder="example.com" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+
+  <div class="categories">
+
+    <div class="cat open" data-color="cyan">
+      <div class="cat-header" onclick="toggleCat(this)">
+        <div class="cat-icon">📂</div>
+        <div class="cat-title">File &amp; Directory Discovery</div>
+        <div class="cat-count">10 queries</div>
+        <div class="cat-arrow">▼</div>
+      </div>
+      <div class="cat-body">
+        <div class="btn-grid">
+          <button class="sbtn" onclick="googleSearch(1)">Directory Listing Vulnerabilities</button>
+          <button class="sbtn" onclick="googleSearch(2)">Exposed Configuration Files</button>
+          <button class="sbtn" onclick="googleSearch(3)">Exposed Database Files</button>
+          <button class="sbtn" onclick="googleSearch(4)">Exposed Log Files</button>
+          <button class="sbtn" onclick="googleSearch(5)">Backup &amp; Old Files</button>
+          <button class="sbtn" onclick="googleSearch(8)">Publicly Exposed Documents</button>
+          <button class="sbtn" onclick="googleSearch(46)">Sensitive conf.php Files</button>
+          <button class="sbtn" onclick="googleSearch(56)">download.php Files</button>
+          <button class="sbtn" onclick="googleSearch(60)">users.yml / admin.yml / config.yml</button>
+          <button class="sbtn" onclick="googleSearch(63)">Index of /etc</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="cat open" data-color="green">
+      <div class="cat-header" onclick="toggleCat(this)">
+        <div class="cat-icon">🟢</div>
+        <div class="cat-title">WordPress &amp; CMS</div>
+        <div class="cat-count">11 queries</div>
+        <div class="cat-arrow">▼</div>
+      </div>
+      <div class="cat-body">
+        <div class="btn-grid">
+          <button class="sbtn" onclick="googleSearch(10)">Find WordPress Sites</button>
+          <button class="sbtn" onclick="googleSearch(20)">Find WordPress #2</button>
+          <button class="sbtn" onclick="googleSearch(33)">WP Config Backup</button>
+          <button class="sbtn" onclick="googleSearch(40)">wp-content Juicy Info</button>
+          <button class="sbtn" onclick="googleSearch(43)">WordPress Juicy File 1</button>
+          <button class="sbtn" onclick="googleSearch(45)">Vulnerable WP Plugin (Contact Form 7)</button>
+          <button class="sbtn" onclick="googleSearch(50)">WordPress Juicy File 2</button>
+          <button class="sbtn" onclick="googleSearch(54)">WordPress Juicy File 3</button>
+          <button class="sbtn" onclick="googleSearch(58)">WordPress Backup Files</button>
+          <button class="sbtn" onclick="googleSearch(51)">Drupal Login Pages</button>
+          <button class="sbtn" onclick="googleSearch(52)">Joomla Database Path</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="cat open" data-color="red">
+      <div class="cat-header" onclick="toggleCat(this)">
+        <div class="cat-icon">🗄️</div>
+        <div class="cat-title">Database &amp; SQL</div>
+        <div class="cat-count">4 queries</div>
+        <div class="cat-arrow">▼</div>
+      </div>
+      <div class="cat-body">
+        <div class="btn-grid">
+          <button class="sbtn" onclick="googleSearch(7)">SQL Error Messages</button>
+          <button class="sbtn" onclick="googleSearch(53)">SQL Query Files</button>
+          <button class="sbtn" onclick="googleSearch(59)">MySQL Configuration Files</button>
+          <button class="sbtn" onclick="googleSearch(64)">SQL Directories &amp; Databases</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="cat open" data-color="yellow">
+      <div class="cat-header" onclick="toggleCat(this)">
+        <div class="cat-icon">🔐</div>
+        <div class="cat-title">Authentication &amp; Admin</div>
+        <div class="cat-count">3 queries</div>
+        <div class="cat-arrow">▼</div>
+      </div>
+      <div class="cat-body">
+        <div class="btn-grid">
+          <button class="sbtn" onclick="googleSearch(6)">Login Pages</button>
+          <button class="sbtn" onclick="googleSearch(42)">Admin Portal (admin.aspx)</button>
+          <button class="sbtn" onclick="googleSearch(48)">Sensitive Admin Backups</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="cat open" data-color="red">
+      <div class="cat-header" onclick="toggleCat(this)">
+        <div class="cat-icon">⚠️</div>
+        <div class="cat-title">Vulnerabilities &amp; Exploits</div>
+        <div class="cat-count">10 queries</div>
+        <div class="cat-arrow">▼</div>
+      </div>
+      <div class="cat-body">
+        <div class="btn-grid">
+          <button class="sbtn" onclick="googleSearch(9)">phpinfo() Pages</button>
+          <button class="sbtn" onclick="googleSearch(11)">Finding Backdoors</button>
+          <button class="sbtn" onclick="googleSearch(12)">Install / Setup Files</button>
+          <button class="sbtn" onclick="googleSearch(13)">Open Redirects</button>
+          <button class="sbtn" onclick="googleSearch(14)">Apache STRUTS RCE</button>
+          <button class="sbtn" onclick="googleSearch(17)">.htaccess Sensitive Files</button>
+          <button class="sbtn" onclick="googleSearch(22)">Test CrossDomain.xml</button>
+          <button class="sbtn" onclick="googleSearch(38)">Vulnerable GeoServers</button>
+          <button class="sbtn" onclick="googleSearch(39)">ArcGIS REST Services</button>
+          <button class="sbtn" onclick="googleSearch(44)">File Upload Scripts</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="cat open" data-color="purple">
+      <div class="cat-header" onclick="toggleCat(this)">
+        <div class="cat-icon">🌐</div>
+        <div class="cat-title">Subdomain &amp; Asset Discovery</div>
+        <div class="cat-count">7 queries</div>
+        <div class="cat-arrow">▼</div>
+      </div>
+      <div class="cat-body">
+        <div class="btn-grid">
+          <button class="sbtn" onclick="googleSearch(18)">Find Subdomains</button>
+          <button class="sbtn" onclick="googleSearch(19)">Find Sub-Subdomains</button>
+          <button class="sbtn" onclick="googleSearch(30)">Certificate Transparency (crt.sh)</button>
+          <button class="sbtn" onclick="googleSearch(34)">Censys IPv4 Search</button>
+          <button class="sbtn" onclick="googleSearch(35)">Censys Domain Search</button>
+          <button class="sbtn" onclick="googleSearch(36)">Censys Certificates</button>
+          <button class="sbtn" onclick="googleSearch(37)">SHODAN Search</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="cat open" data-color="orange">
+      <div class="cat-header" onclick="toggleCat(this)">
+        <div class="cat-icon">🎞️</div>
+        <div class="cat-title">Flash &amp; Media Files</div>
+        <div class="cat-count">4 queries</div>
+        <div class="cat-arrow">▼</div>
+      </div>
+      <div class="cat-body">
+        <div class="btn-grid">
+          <button class="sbtn" onclick="googleSearch(24)">Find SWF Files (Google)</button>
+          <button class="sbtn" onclick="googleSearch(25)">Find MIME-SWF (Yandex)</button>
+          <button class="sbtn" onclick="googleSearch(26)">SWF Links (Archive)</button>
+          <button class="sbtn" onclick="googleSearch(27)">MIME-SWF Links (Archive)</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="cat open" data-color="cyan">
+      <div class="cat-header" onclick="toggleCat(this)">
+        <div class="cat-icon">🏛️</div>
+        <div class="cat-title">Archive &amp; Historical Data</div>
+        <div class="cat-count">2 queries</div>
+        <div class="cat-arrow">▼</div>
+      </div>
+      <div class="cat-body">
+        <div class="btn-grid">
+          <button class="sbtn" onclick="googleSearch(28)">Web Archive Search #1</button>
+          <button class="sbtn" onclick="googleSearch(29)">Web Archive Search #2</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="cat open" data-color="green">
+      <div class="cat-header" onclick="toggleCat(this)">
+        <div class="cat-icon">🔎</div>
+        <div class="cat-title">OSINT &amp; Social</div>
+        <div class="cat-count">7 queries</div>
+        <div class="cat-arrow">▼</div>
+      </div>
+      <div class="cat-body">
+        <div class="btn-grid">
+          <button class="sbtn" onclick="googleSearch(15)">Pastebin Entries</button>
+          <button class="sbtn" onclick="googleSearch(16)">LinkedIn Employees</button>
+          <button class="sbtn" onclick="googleSearch(21)">GitHub Code Search</button>
+          <button class="sbtn" onclick="googleSearch(23)">ThreatCrowd</button>
+          <button class="sbtn" onclick="googleSearch(31)">O
